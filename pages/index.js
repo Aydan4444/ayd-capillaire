@@ -234,8 +234,8 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>{BRAND} | Soins capillaires et dermatologiques naturels</title>
-        <meta name="description" content={`${BRAND}, spécialisé dans les soins capillaires et dermatologiques. Huiles pures et naturelles pour vos cheveux et votre peau.`} />
+        <title>{BRAND} | Soins capillaires et de la peau naturels</title>
+        <meta name="description" content={`${BRAND}, spécialisé dans les soins capillaires et de la peau. Huiles pures et naturelles pour vos cheveux et votre peau.`} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -249,7 +249,7 @@ export default function Home() {
         <div className="header-inner">
           <a className="logo" href="#top">
             <span className="logo-name serif">AYD<span>.</span>Cosmetics</span>
-            <span className="logo-sub">Soins capillaires &amp; dermatologiques</span>
+            <span className="logo-sub">Soins capillaires &amp; de la peau</span>
           </a>
           <button className="cart-btn" onClick={() => setShowCart(true)} aria-label="Ouvrir le panier">
             <ShoppingCart size={26} />
@@ -266,7 +266,7 @@ export default function Home() {
             Sublimez vos cheveux et votre peau, <em>naturellement</em>
           </h2>
           <p className="fade-up delay-2">
-            {BRAND} vous propose des huiles pures et naturelles, spécialisées dans les soins capillaires et dermatologiques.
+            {BRAND} vous propose des huiles pures et naturelles, spécialisées dans les soins capillaires et de la peau.
           </p>
           <a href="#produits" className="btn btn-gold fade-up delay-3">Découvrir nos huiles</a>
         </div>
