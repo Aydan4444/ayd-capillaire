@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
-import { ShoppingCart, X, Leaf, Truck, Smartphone, MessageCircle } from 'lucide-react';
+import { ShoppingCart, X, Leaf, Truck, Smartphone, MessageCircle, Search } from 'lucide-react';
 
 // ⚠️ Numéro WhatsApp qui reçoit les commandes (indicatif 225 + numéro, sans + ni espaces)
 const WHATSAPP_NUMBER = '2250152105101';
@@ -28,6 +28,24 @@ const paymentMethods = {
 };
 
 const emptyInfo = { name: '', phone: '', address: '', paymentMethod: 'orange' };
+
+// Filtres : chaque produit (par son id) appartient à une ou plusieurs catégories
+const filters = ['Tous', 'Cheveux', 'Peau', 'Corps'];
+const productTags = {
+  1: ['Cheveux', 'Peau'],
+  2: ['Cheveux', 'Corps'],
+  3: ['Peau', 'Cheveux'],
+  4: ['Corps', 'Peau'],
+  5: ['Cheveux'],
+  6: ['Cheveux', 'Peau'],
+  7: ['Cheveux'],
+  8: ['Cheveux'],
+  9: ['Peau', 'Corps'],
+};
+
+// Enlève les accents et met en minuscules (pour que "ricin" trouve "Ricin", "argan" trouve "Argan"...)
+const normalize = (text) =>
+  text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
 const css = `
   :root {
@@ -151,6 +169,22 @@ const css = `
   .qty-btn { padding: 0.25rem 0.75rem; background: var(--lilac); color: var(--violet); border: none; border-radius: 0.4rem; cursor: pointer; font-weight: 700; }
   .pay-box { background: var(--lilac); padding: 0.9rem; border-radius: 0.8rem; }
 
+  .toolbar { max-width: 640px; margin: 0 auto 2rem; display: flex; flex-direction: column; gap: 1rem; }
+  .search { position: relative; }
+  .search svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #8b7fa3; }
+  .search input { width: 100%; padding: 0.85rem 1rem 0.85rem 2.8rem; border: 1px solid #d9d0ea; border-radius: 999px; font-size: 1rem; font-family: inherit; background: white; }
+  .search input:focus { outline: 2px solid var(--violet); border-color: transparent; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; }
+  .chip { padding: 0.5rem 1.2rem; border-radius: 999px; border: 1.5px solid #d9d0ea; background: white; color: var(--text); font-weight: 600; font-size: 0.9rem; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+  .chip:hover { border-color: var(--violet); color: var(--violet); }
+  .chip.active { background: var(--violet); border-color: var(--violet); color: white; }
+  .empty { text-align: center; color: #6b6080; padding: 3rem 1rem; }
+  .empty button { margin-top: 1rem; }
+
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(37,211,102,0.5); } 70% { box-shadow: 0 0 0 16px rgba(37,211,102,0); } 100% { box-shadow: 0 0 0 0 rgba(37,211,102,0); } }
+  .wa-float { position: fixed; right: 1rem; bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); z-index: 40; width: 58px; height: 58px; border-radius: 50%; background: #25D366; color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 8px 24px rgba(37,211,102,0.45); animation: pulse 2.5s infinite; transition: transform 0.2s; }
+  .wa-float:hover { transform: scale(1.08); }
+
   @media (max-width: 600px) {
     .hero { padding: 3.5rem 1rem 5rem; }
     .section { padding-top: 3rem; }
@@ -163,6 +197,15 @@ export default function Home() {
   const [showCart, setShowCart] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [customerInfo, setCustomerInfo] = useState(emptyInfo);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeFilter, setActiveFilter] = useState('Tous');
+
+  const filtered = products.filter((p) => {
+    const matchFilter = activeFilter === 'Tous' || productTags[p.id].includes(activeFilter);
+    const text = normalize([p.name, p.category, ...p.benefits].join(' '));
+    const matchSearch = text.includes(normalize(searchTerm.trim()));
+    return matchFilter && matchSearch;
+  });
 
   useEffect(() => {
     try {
@@ -295,8 +338,26 @@ export default function Home() {
           <div className="divider" />
           <p>Chaque huile répond à un besoin précis pour vos cheveux et votre peau.</p>
         </div>
+        <div className="toolbar">
+          <div className="search">
+            <Search size={18} />
+            <input
+              type="search"
+              placeholder="Rechercher une huile (ricin, argan, chute...)"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="chips">
+            {filters.map((f) => (
+              <button key={f} className={`chip ${activeFilter === f ? 'active' : ''}`} onClick={() => setActiveFilter(f)}>
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="grid">
-          {products.map((product, index) => (
+          {filtered.map((product, index) => (
             <div key={product.id} className="card" style={{ animationDelay: `${(index % 6) * 0.08}s` }}>
               {/* Remplace ce bloc par <img src="/produits/..." alt={product.name} /> avec tes vraies photos */}
               <div className="card-visual">{product.emoji}</div>
@@ -318,6 +379,14 @@ export default function Home() {
             </div>
           ))}
         </div>
+        {filtered.length === 0 && (
+          <div className="empty">
+            <p>Aucune huile ne correspond à votre recherche.</p>
+            <button className="btn btn-violet" onClick={() => { setSearchTerm(''); setActiveFilter('Tous'); }}>
+              Voir tous les produits
+            </button>
+          </div>
+        )}
       </main>
 
       {/* Comment commander */}
@@ -356,6 +425,17 @@ export default function Home() {
           </a>
         </div>
       </section>
+
+      {/* Bouton WhatsApp flottant */}
+      <a
+        className="wa-float"
+        href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Bonjour ${BRAND}, j'ai une question.`)}`}
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Discuter sur WhatsApp"
+      >
+        <MessageCircle size={28} />
+      </a>
 
       {/* Panier */}
       {showCart && (
@@ -453,9 +533,8 @@ export default function Home() {
       {/* Footer */}
       <footer className="footer">
         <span className="logo-name serif" style={{ color: 'white', fontSize: '1.4rem', fontWeight: 700 }}>AYD<span style={{ color: '#d4af37' }}>.</span>Cosmetics</span>
-        <p>Soins capillaires &amp; Soins de la peau • Livraison nationale</p>
+        <p>Soins capillaires &amp; de la peau • Livraison nationale</p>
         <p>© {new Date().getFullYear()} {BRAND}. Tous droits réservés.</p>
-        <p>Paul Aydan BOYO &amp; Co.</p>
       </footer>
     </>
   );
