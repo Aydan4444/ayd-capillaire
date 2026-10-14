@@ -27,7 +27,30 @@ const paymentMethods = {
   wave: { name: 'Wave', number: '0152105101' },
 };
 
-const emptyInfo = { name: '', phone: '', address: '', paymentMethod: 'orange' };
+// Paiement à la livraison (espèces) : mets false pour le désactiver
+const COD_ENABLED = true;
+
+// Zones de livraison. fee = frais en FCFA (ex : fee: 1500).
+// Laisse fee: null si les frais dépendent du tarif de l'application de livraison :
+// le client verra alors "frais communiqués sur WhatsApp".
+const deliveryZones = [
+  { id: 'abobo', name: 'Abidjan - Abobo', fee: 1500 },
+  { id: 'adjame', name: 'Abidjan - Adjamé', fee: 1500 },
+  { id: 'anyama', name: 'Abidjan - Anyama', fee: 2000 },
+  { id: 'attecoube', name: 'Abidjan - Attécoubé', fee: 1000 },
+  { id: 'bingerville', name: 'Abidjan - Bingerville', fee: 2000 },
+  { id: 'cocody', name: 'Abidjan - Cocody', fee: 2000 },
+  { id: 'koumassi', name: 'Abidjan - Koumassi', fee: 2000 },
+  { id: 'marcory', name: 'Abidjan - Marcory', fee: 2000 },
+  { id: 'plateau', name: 'Abidjan - Plateau', fee: 1500 },
+  { id: 'port-bouet', name: 'Abidjan - Port-Bouët', fee: 2500 },
+  { id: 'songon', name: 'Abidjan - Songon', fee: 2500 },
+  { id: 'treichville', name: 'Abidjan - Treichville', fee: 1500 },
+  { id: 'yopougon', name: 'Abidjan - Yopougon', fee: 1000 },
+  { id: 'autre', name: 'Autre ville (hors Abidjan)', fee: 3000 à 5000 },
+];
+
+const emptyInfo = { name: '', phone: '', zone: '', address: '', paymentMethod: 'orange', reference: '' };
 
 // Filtres : chaque produit (par son id) appartient à une ou plusieurs catégories
 const filters = ['Tous', 'Cheveux', 'Peau', 'Corps'];
@@ -240,23 +263,43 @@ export default function Home() {
   const cartTotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0);
 
+  const zone = deliveryZones.find((z) => z.id === customerInfo.zone);
+  const deliveryFee = zone && typeof zone.fee === 'number' ? zone.fee : null;
+  const isCod = customerInfo.paymentMethod === 'cod';
+  const selectedPay = isCod ? null : paymentMethods[customerInfo.paymentMethod];
+  const amountNow = cartTotal + (deliveryFee || 0);
+
+  const formatF = (n) => `${n.toLocaleString('fr-FR')} F`;
+  const feeText = !zone ? 'selon votre zone' : deliveryFee !== null ? formatF(deliveryFee) : 'frais communiqués sur WhatsApp';
+
   const handleCheckout = (e) => {
     e.preventDefault();
-    if (!customerInfo.name.trim() || !customerInfo.phone.trim() || !customerInfo.address.trim()) {
-      alert("Veuillez remplir le nom, le téléphone et l'adresse.");
+    if (!customerInfo.name.trim() || !customerInfo.phone.trim() || !customerInfo.zone || !customerInfo.address.trim()) {
+      alert("Veuillez remplir le nom, le téléphone, la commune et l'adresse.");
+      return;
+    }
+    if (customerInfo.phone.replace(/\D/g, '').length < 8) {
+      alert('Votre numéro de téléphone semble incomplet.');
       return;
     }
 
-    const pay = paymentMethods[customerInfo.paymentMethod];
-    const lines = cart.map((i) => `• ${i.name} x${i.quantity} = ${(i.price * i.quantity).toLocaleString('fr-FR')} F`);
+    const lines = cart.map((i) => `• ${i.name} x${i.quantity} = ${formatF(i.price * i.quantity)}`);
 
     const message = [
       `🛍️ *Nouvelle commande ${BRAND}*`,
       '',
       ...lines,
       '',
-      `💰 *Total : ${cartTotal.toLocaleString('fr-FR')} F* (hors livraison)`,
-      `💳 Paiement : ${pay.name} (${pay.number})`,
+      `🧾 Sous-total : ${formatF(cartTotal)}`,
+      `🚚 Livraison (${zone.name}) : ${deliveryFee !== null ? formatF(deliveryFee) : 'à confirmer, selon le tarif ' + DELIVERY_APP}`,
+      `💰 *Total : ${formatF(amountNow)}*${deliveryFee === null ? ' + frais de livraison' : ''}`,
+      '',
+      isCod
+        ? '💳 Paiement : à la livraison (espèces)'
+        : `💳 Paiement : ${selectedPay.name} (${selectedPay.number})`,
+      ...(isCod
+        ? []
+        : [`🔖 Référence de transaction : ${customerInfo.reference.trim() || "non indiquée (capture d'écran à envoyer dans cette conversation)"}`]),
       '',
       `👤 Nom : ${customerInfo.name}`,
       `📞 Téléphone : ${customerInfo.phone}`,
@@ -271,8 +314,6 @@ export default function Home() {
     setShowCart(false);
     setCustomerInfo(emptyInfo);
   };
-
-  const selectedPay = paymentMethods[customerInfo.paymentMethod];
 
   return (
     <>
@@ -491,9 +532,20 @@ export default function Home() {
             <form onSubmit={handleCheckout} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <input className="input" type="text" placeholder="Nom complet" value={customerInfo.name}
                 onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })} />
-              <input className="input" type="tel" placeholder="Téléphone" value={customerInfo.phone}
+              <input className="input" type="tel" placeholder="Téléphone (WhatsApp de préférence)" value={customerInfo.phone}
                 onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })} />
-              <textarea className="input" placeholder="Adresse de livraison" rows="3" value={customerInfo.address}
+
+              <select className="input" value={customerInfo.zone}
+                onChange={(e) => setCustomerInfo({ ...customerInfo, zone: e.target.value })}>
+                <option value="">Commune / ville de livraison</option>
+                {deliveryZones.map((z) => (
+                  <option key={z.id} value={z.id}>
+                    {z.name}{typeof z.fee === 'number' ? ` - ${formatF(z.fee)}` : ''}
+                  </option>
+                ))}
+              </select>
+
+              <textarea className="input" placeholder="Quartier, repère, précisions (ex : près de la pharmacie...)" rows="3" value={customerInfo.address}
                 onChange={(e) => setCustomerInfo({ ...customerInfo, address: e.target.value })} />
 
               <div>
@@ -503,17 +555,43 @@ export default function Home() {
                   {Object.entries(paymentMethods).map(([key, m]) => (
                     <option key={key} value={key}>{m.name}</option>
                   ))}
+                  {COD_ENABLED && <option value="cod">Paiement à la livraison (espèces)</option>}
                 </select>
               </div>
 
               <div className="pay-box">
-                <p style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1a0f2e' }}>Montant à payer :</p>
-                <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#7c3aed' }}>{cartTotal.toLocaleString('fr-FR')} F</p>
-                <p style={{ fontSize: '0.85rem', color: '#1a0f2e', marginTop: '0.5rem' }}>
-                  Envoyez ce montant par <strong>{selectedPay.name}</strong> au <strong>{selectedPay.number}</strong>.
-                </p>
-                <p style={{ fontSize: '0.75rem', color: '#6b6080', marginTop: '0.5rem' }}>
-                  En cliquant sur « Envoyer ma commande », WhatsApp s'ouvre avec votre commande. Envoyez-la et nous confirmons dès réception du paiement. Livraison via app {DELIVERY_APP} (frais selon tarif de l'application).
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                  <span>Sous-total</span><span>{formatF(cartTotal)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginTop: '0.3rem' }}>
+                  <span>Livraison</span><span style={{ textAlign: 'right' }}>{feeText}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '1.2rem', color: '#7c3aed', marginTop: '0.6rem', paddingTop: '0.6rem', borderTop: '1px solid #d9c8f5' }}>
+                  <span>Total</span><span>{formatF(amountNow)}{deliveryFee === null && zone ? ' +' : ''}</span>
+                </div>
+
+                {isCod ? (
+                  <p style={{ fontSize: '0.85rem', color: '#1a0f2e', marginTop: '0.8rem' }}>
+                    Vous payez <strong>en espèces à la réception</strong>. Nous vous contactons sur WhatsApp pour confirmer la commande avant l'envoi.
+                  </p>
+                ) : (
+                  <>
+                    <p style={{ fontSize: '0.85rem', color: '#1a0f2e', marginTop: '0.8rem' }}>
+                      1. Envoyez <strong>{formatF(amountNow)}</strong> par <strong>{selectedPay.name}</strong> au <strong>{selectedPay.number}</strong>.
+                    </p>
+                    <p style={{ fontSize: '0.85rem', color: '#1a0f2e', marginTop: '0.4rem' }}>
+                      2. Indiquez ci-dessous la référence de la transaction (reçue par SMS) :
+                    </p>
+                    <input className="input" style={{ marginTop: '0.5rem' }} type="text" placeholder="Référence de transaction"
+                      value={customerInfo.reference}
+                      onChange={(e) => setCustomerInfo({ ...customerInfo, reference: e.target.value })} />
+                    <p style={{ fontSize: '0.75rem', color: '#6b6080', marginTop: '0.5rem' }}>
+                      Vous pouvez aussi joindre la capture d'écran du paiement dans la conversation WhatsApp.
+                    </p>
+                  </>
+                )}
+                <p style={{ fontSize: '0.75rem', color: '#6b6080', marginTop: '0.6rem' }}>
+                  En cliquant sur « Envoyer ma commande », WhatsApp s'ouvre avec votre commande : envoyez-la pour la valider. Livraison via app {DELIVERY_APP}.
                 </p>
               </div>
 
