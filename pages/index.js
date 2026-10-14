@@ -453,7 +453,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="footer">
         <span className="logo-name serif" style={{ color: 'white', fontSize: '1.4rem', fontWeight: 700 }}>AYD<span style={{ color: '#d4af37' }}>.</span>Cosmetics</span>
-        <p>Soins capillaires &amp; dermatologiques • Livraison nationale</p>
+        <p>Soins capillaires &amp; Soins de la peau • Livraison nationale</p>
         <p>© {new Date().getFullYear()} {BRAND}. Tous droits réservés.</p>
       </footer>
     </>
