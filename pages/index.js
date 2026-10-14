@@ -31,8 +31,8 @@ const paymentMethods = {
 const COD_ENABLED = true;
 
 // Zones de livraison. fee = frais en FCFA (ex : fee: 1500).
-// Laisse fee: null si les frais dépendent du tarif de l'application de livraison :
-// le client verra alors "frais communiqués sur WhatsApp".
+// fee: null + feeRange: '3 000 à 5 000 F' = frais variables : le client voit la fourchette
+// et les frais exacts sont confirmés sur WhatsApp (ils ne sont pas ajoutés au total).
 const deliveryZones = [
   { id: 'abobo', name: 'Abidjan - Abobo', fee: 1500 },
   { id: 'adjame', name: 'Abidjan - Adjamé', fee: 1500 },
@@ -47,7 +47,7 @@ const deliveryZones = [
   { id: 'songon', name: 'Abidjan - Songon', fee: 2500 },
   { id: 'treichville', name: 'Abidjan - Treichville', fee: 1500 },
   { id: 'yopougon', name: 'Abidjan - Yopougon', fee: 1000 },
-  { id: 'autre', name: 'Autre ville (hors Abidjan)', fee: 3000 à 5000 },
+  { id: 'autre', name: 'Autre ville (hors Abidjan)', fee: null, feeRange: '3 000 à 5 000 F' },
 ];
 
 const emptyInfo = { name: '', phone: '', zone: '', address: '', paymentMethod: 'orange', reference: '' };
@@ -270,7 +270,13 @@ export default function Home() {
   const amountNow = cartTotal + (deliveryFee || 0);
 
   const formatF = (n) => `${n.toLocaleString('fr-FR')} F`;
-  const feeText = !zone ? 'selon votre zone' : deliveryFee !== null ? formatF(deliveryFee) : 'frais communiqués sur WhatsApp';
+  const feeText = !zone
+    ? 'selon votre zone'
+    : deliveryFee !== null
+    ? formatF(deliveryFee)
+    : zone.feeRange
+    ? `${zone.feeRange} (confirmé sur WhatsApp)`
+    : 'frais communiqués sur WhatsApp';
 
   const handleCheckout = (e) => {
     e.preventDefault();
@@ -291,7 +297,7 @@ export default function Home() {
       ...lines,
       '',
       `🧾 Sous-total : ${formatF(cartTotal)}`,
-      `🚚 Livraison (${zone.name}) : ${deliveryFee !== null ? formatF(deliveryFee) : 'à confirmer, selon le tarif ' + DELIVERY_APP}`,
+      `🚚 Livraison (${zone.name}) : ${deliveryFee !== null ? formatF(deliveryFee) : zone.feeRange ? 'à confirmer (' + zone.feeRange + ')' : 'à confirmer, selon le tarif ' + DELIVERY_APP}`,
       `💰 *Total : ${formatF(amountNow)}*${deliveryFee === null ? ' + frais de livraison' : ''}`,
       '',
       isCod
@@ -540,7 +546,7 @@ export default function Home() {
                 <option value="">Commune / ville de livraison</option>
                 {deliveryZones.map((z) => (
                   <option key={z.id} value={z.id}>
-                    {z.name}{typeof z.fee === 'number' ? ` - ${formatF(z.fee)}` : ''}
+                    {z.name}{typeof z.fee === 'number' ? ` - ${formatF(z.fee)}` : z.feeRange ? ` - ${z.feeRange}` : ''}
                   </option>
                 ))}
               </select>
