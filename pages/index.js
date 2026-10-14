@@ -6,6 +6,9 @@ import { ShoppingCart, X, Leaf, Truck, Smartphone, MessageCircle, Search } from 
 const WHATSAPP_NUMBER = '2250152105101';
 // Nom de l'application de livraison (corrige-le si besoin : Yango / Yang)
 const DELIVERY_APP = 'Yango';
+// Lien Google Apps Script qui enregistre chaque commande dans ton Google Sheet.
+// Colle ici l'adresse qui finit par /exec (laisse '' pour désactiver).
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbytw2zahrBNZmuk_yVl28RPsXDHR5EiQwhouRCLK88t7heaHLGljQrF_KwuoNzP-nI/exec';
 
 const BRAND = 'AYD.Cosmetics';
 
@@ -157,7 +160,8 @@ const css = `
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
   .card { background: white; border-radius: 1.25rem; overflow: hidden; box-shadow: 0 4px 16px rgba(59,26,120,0.08); transition: transform 0.3s, box-shadow 0.3s; animation: fadeUp 0.7s ease both; display: flex; flex-direction: column; }
   .card:hover { transform: translateY(-6px); box-shadow: 0 18px 40px rgba(59,26,120,0.18); }
-  .card-visual { height: 150px; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; background: linear-gradient(135deg, #ede1ff, #f9f3ff); transition: transform 0.4s; }
+  .card-visual img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card-visual { height: 200px; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; background: linear-gradient(135deg, #ede1ff, #f9f3ff); transition: transform 0.4s; }
   .card:hover .card-visual { transform: scale(1.06); }
   .card-body { padding: 1.1rem 1.25rem 1.25rem; display: flex; flex-direction: column; flex: 1; }
   .tag { align-self: flex-start; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; color: var(--violet); background: var(--lilac); padding: 0.25rem 0.7rem; border-radius: 999px; margin-bottom: 0.7rem; }
@@ -213,6 +217,22 @@ const css = `
     .section { padding-top: 3rem; }
   }
 `;
+
+// Photo du produit : /public/produits/1.jpg, 2.jpg... (jpg, jpeg, png ou webp). Sans photo, l'emoji s'affiche.
+const photoExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+
+function ProductImage({ product }) {
+  const [extIndex, setExtIndex] = useState(0);
+  if (extIndex >= photoExtensions.length) return <span>{product.emoji}</span>;
+  return (
+    <img
+      src={`/produits/${product.id}.${photoExtensions[extIndex]}`}
+      alt={product.name}
+      loading="lazy"
+      onError={() => setExtIndex(extIndex + 1)}
+    />
+  );
+}
 
 export default function Home() {
   const [cart, setCart] = useState([]);
@@ -289,10 +309,12 @@ export default function Home() {
       return;
     }
 
+    const orderId = 'AYD-' + Date.now().toString(36).toUpperCase().slice(-6);
+
     const lines = cart.map((i) => `• ${i.name} x${i.quantity} = ${formatF(i.price * i.quantity)}`);
 
     const message = [
-      `🛍️ *Nouvelle commande ${BRAND}*`,
+      `🛍️ *Nouvelle commande ${BRAND}* (n° ${orderId})`,
       '',
       ...lines,
       '',
@@ -312,6 +334,31 @@ export default function Home() {
       `📍 Adresse : ${customerInfo.address}`,
       `🚚 Livraison via app ${DELIVERY_APP}`,
     ].join('\n');
+
+    // Enregistrement dans Google Sheet (sans bloquer l'envoi sur WhatsApp en cas de problème)
+    if (SHEET_URL) {
+      try {
+        fetch(SHEET_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          keepalive: true,
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            orderId,
+            name: customerInfo.name,
+            phone: customerInfo.phone,
+            zone: zone.name,
+            address: customerInfo.address,
+            items: cart.map((i) => `${i.name} x${i.quantity}`).join(', '),
+            subtotal: cartTotal,
+            deliveryFee: deliveryFee !== null ? deliveryFee : zone.feeRange || 'à confirmer',
+            total: amountNow,
+            payment: isCod ? 'À la livraison' : selectedPay.name,
+            reference: customerInfo.reference.trim(),
+          }),
+        }).catch(() => {});
+      } catch (err) {}
+    }
 
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
 
@@ -406,8 +453,9 @@ export default function Home() {
         <div className="grid">
           {filtered.map((product, index) => (
             <div key={product.id} className="card" style={{ animationDelay: `${(index % 6) * 0.08}s` }}>
-              {/* Remplace ce bloc par <img src="/produits/..." alt={product.name} /> avec tes vraies photos */}
-              <div className="card-visual">{product.emoji}</div>
+              <div className="card-visual">
+                <ProductImage product={product} />
+              </div>
               <div className="card-body">
                 <span className="tag">{product.category}</span>
                 <h4>{product.name}</h4>
