@@ -8,7 +8,7 @@ const WHATSAPP_NUMBER = '2250152105101';
 const DELIVERY_APP = 'Yango';
 // Lien Google Apps Script qui enregistre chaque commande dans ton Google Sheet.
 // Colle ici l'adresse qui finit par /exec (laisse '' pour désactiver).
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbytw2zahrBNZmuk_yVl28RPsXDHR5EiQwhouRCLK88t7heaHLGljQrF_KwuoNzP-nI/exec';
+const SHEET_URL = '';
 
 const BRAND = 'AYD.Cosmetics';
 
@@ -107,7 +107,9 @@ const css = `
     border-bottom: 1px solid rgba(212, 175, 55, 0.25);
   }
   .header-inner { max-width: 1200px; margin: 0 auto; padding: 0.9rem 1rem; display: flex; align-items: center; justify-content: space-between; }
-  .logo { display: flex; flex-direction: column; line-height: 1.1; text-decoration: none; }
+  .logo { display: flex; align-items: center; gap: 0.9rem; text-decoration: none; }
+  .logo-img { height: 56px; width: auto; display: block; }
+  .hero-logo { height: 130px; width: auto; display: block; margin: 0 auto 1.2rem; }
   .logo-name { font-size: 1.5rem; font-weight: 700; color: white; letter-spacing: 0.02em; }
   .logo-name span { color: var(--gold); }
   .logo-sub { font-size: 0.65rem; color: #c9a8e0; letter-spacing: 0.18em; text-transform: uppercase; }
@@ -213,6 +215,9 @@ const css = `
   .wa-float:hover { transform: scale(1.08); }
 
   @media (max-width: 600px) {
+    .logo-sub { display: none; }
+    .logo-img { height: 48px; }
+    .hero-logo { height: 100px; }
     .hero { padding: 3.5rem 1rem 5rem; }
     .section { padding-top: 3rem; }
   }
@@ -374,6 +379,7 @@ export default function Home() {
         <title>{BRAND} | Soins capillaires et de la peau naturels</title>
         <meta name="description" content={`${BRAND}, spécialisé dans les soins capillaires et de la peau. Huiles pures et naturelles pour vos cheveux et votre peau.`} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
@@ -384,8 +390,8 @@ export default function Home() {
       {/* Header */}
       <header className="header">
         <div className="header-inner">
-          <a className="logo" href="#top">
-            <span className="logo-name serif">AYD<span>.</span>Cosmetics</span>
+          <a className="logo" href="#top" aria-label="AYD.Cosmetics, accueil">
+            <img className="logo-img" src="/logo-light.png" alt="AYD.Cosmetics" />
             <span className="logo-sub">Soins capillaires &amp; de la peau</span>
           </a>
           <button className="cart-btn" onClick={() => setShowCart(true)} aria-label="Ouvrir le panier">
@@ -398,6 +404,7 @@ export default function Home() {
       {/* Hero */}
       <section className="hero" id="top">
         <div className="hero-inner">
+          <img className="hero-logo fade-up" src="/logo-light.png" alt="AYD.Cosmetics" />
           <span className="eyebrow fade-up">100% naturel</span>
           <h2 className="fade-up delay-1">
             Sublimez vos cheveux et votre peau, <em>naturellement</em>
@@ -664,7 +671,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="footer">
-        <span className="logo-name serif" style={{ color: 'white', fontSize: '1.4rem', fontWeight: 700 }}>AYD<span style={{ color: '#d4af37' }}>.</span>Cosmetics</span>
+        <img src="/logo-light.png" alt="AYD.Cosmetics" style={{ height: '90px', width: 'auto', display: 'block', margin: '0 auto 0.8rem' }} />
         <p>Soins capillaires &amp; de la peau • Livraison nationale</p>
         <p>© {new Date().getFullYear()} {BRAND}. Tous droits réservés.</p>
       </footer>
