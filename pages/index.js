@@ -511,7 +511,7 @@ export default function Home() {
           <div className="step">
             <div className="step-num">3</div>
             <h4>Payez &amp; recevez</h4>
-            <p>Payez par Mobile Money, nous confirmons puis vous êtes livré.</p>
+            <p>Payez par Mobile Money, nous confirmons puis vous êtes livré, ou payez en espèces avec le livreur.</p>
           </div>
         </div>
       </section>
@@ -520,7 +520,7 @@ export default function Home() {
       <section className="cta">
         <div className="cta-box">
           <h3 className="serif">Une question sur nos soins ?</h3>
-          <p>Écrivez-nous sur WhatsApp, nous vous conseillons l'huile adaptée à votre besoin.</p>
+          <p>Écrivez-nous sur WhatsApp, nous vous conseillons le produit adaptée à votre besoin.</p>
           <a className="btn btn-gold" href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer">
             <MessageCircle size={18} style={{ verticalAlign: '-3px', marginRight: '0.5rem' }} />
             Discuter sur WhatsApp
@@ -672,7 +672,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="footer">
         <img src="/logo-light.png" alt="AYD.Cosmetics" style={{ height: '90px', width: 'auto', display: 'block', margin: '0 auto 0.8rem' }} />
-        <p>Soins capillaires &amp; soins de la peau • Livraison nationale</p>
+        <p>Soins capillaires &amp; soins de la peau par Aydan • COTE D'IVOIRE, Abidjan</p>
         <p>© {new Date().getFullYear()} {BRAND}. Tous droits réservés.</p>
       </footer>
     </>
