@@ -392,7 +392,7 @@ export default function Home() {
         <div className="header-inner">
           <a className="logo" href="#top" aria-label="AYD.Cosmetics, accueil">
             <img className="logo-img" src="/logo-light.png" alt="AYD.Cosmetics" />
-            <span className="logo-sub">Soins capillaires &amp; de la peau</span>
+            <span className="logo-sub">Aydan Cosmetics Soins capillaires &amp; de la peau</span>
           </a>
           <button className="cart-btn" onClick={() => setShowCart(true)} aria-label="Ouvrir le panier">
             <ShoppingCart size={26} />
