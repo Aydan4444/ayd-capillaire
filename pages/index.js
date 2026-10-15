@@ -424,7 +424,7 @@ export default function Home() {
         </div>
         <div className="trust-item">
           <div className="trust-icon"><Smartphone size={22} /></div>
-          <div><strong>Paiement Mobile Money</strong><span>Orange, Moov et Wave</span></div>
+          <div><strong>Paiement Mobile Money &amp; en espèces</strong><span>Orange, Moov et Wave</span></div>
         </div>
         <div className="trust-item">
           <div className="trust-icon"><Truck size={22} /></div>
