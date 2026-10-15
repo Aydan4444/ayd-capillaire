@@ -13,14 +13,14 @@ const SHEET_URL = '';
 const BRAND = 'AYD.Cosmetics';
 
 const products = [
-  { id: 1, name: "Huile d'amande douce", price: 2000, category: 'Cheveux & Cuir chevelu', emoji: '🌰', benefits: ['Hydrate le cuir chevelu', 'Aide à stimuler la repousse', 'Contribue à atténuer les cernes', 'Soin de la peau'] },
-  { id: 2, name: 'Huile de fenugrec', price: 2000, category: 'Cheveux & Corps', emoji: '🌿', benefits: ['Aide à limiter la chute', 'Favorise la croissance', 'Renforce et hydrate', 'Soin de la peau'] },
-  { id: 3, name: 'Huile de nila bleu', price: 2000, category: 'Anti-taches & Peau', emoji: '💙', benefits: ['Aide à unifier le teint', 'Contribue à réduire les taches', 'Aide à atténuer les cicatrices', 'Nourrit les cheveux'] },
+  { id: 1, name: "Huile d'amande douce", price: 1500, category: 'Cheveux & Cuir chevelu', emoji: '🌰', benefits: ['Hydrate le cuir chevelu', 'Aide à stimuler la repousse', 'Contribue à atténuer les cernes', 'Soin de la peau'] },
+  { id: 2, name: 'Huile de fenugrec', price: 1500, category: 'Cheveux & Corps', emoji: '🌿', benefits: ['Aide à limiter la chute', 'Favorise la croissance', 'Renforce et hydrate', 'Soin de la peau'] },
+  { id: 3, name: 'Huile de nila bleu', price: 2500, category: 'Anti-taches & Peau', emoji: '💙', benefits: ['Aide à unifier le teint', 'Contribue à réduire les taches', 'Aide à atténuer les cicatrices', 'Nourrit les cheveux'] },
   { id: 4, name: 'Huile Akpi', price: 2000, category: 'Corps & Peau', emoji: '🌱', benefits: ['Aide à raffermir la peau', 'Contribue à réduire les ridules', 'Améliore la texture', 'Idéale pour le massage'] },
-  { id: 5, name: 'Huile de Chébé', price: 2000, category: 'Cheveux', emoji: '✨', benefits: ['Limite la casse', 'Favorise la croissance', 'Action anti-chute', 'Aide à réparer les pointes fourchues'] },
-  { id: 6, name: "Huile d'Argan", price: 2000, category: 'Cheveux & Peau Premium', emoji: '👑', benefits: ['Hydratation profonde', 'Nourrit la peau', 'Soin anti-âge', 'Renforce les follicules'] },
+  { id: 5, name: 'Huile de Chébé', price: 1500, category: 'Cheveux', emoji: '✨', benefits: ['Limite la casse', 'Favorise la croissance', 'Action anti-chute', 'Aide à réparer les pointes fourchues'] },
+  { id: 6, name: "Huile d'Argan", price: 1500, category: 'Cheveux & Peau Premium', emoji: '👑', benefits: ['Hydratation profonde', 'Nourrit la peau', 'Soin anti-âge', 'Renforce les follicules'] },
   { id: 7, name: 'Huile de Ricin', price: 2000, category: 'Cheveux & Cils', emoji: '💧', benefits: ['Régénère et nourrit', 'Aide à prévenir la chute', 'Renforce les ongles', 'Favorise la pousse des cils & sourcils'] },
-  { id: 8, name: 'Huile de Hachiche', price: 2000, category: 'Cheveux Secs', emoji: '🍃', benefits: ['Nourrit les cheveux secs', 'Renforce les follicules', 'Réduit les frisottis', 'Apporte de la brillance'] },
+  { id: 8, name: 'Huile de Hachiche', price: 1500, category: 'Cheveux Secs', emoji: '🍃', benefits: ['Nourrit les cheveux secs', 'Renforce les follicules', 'Réduit les frisottis', 'Apporte de la brillance'] },
   { id: 9, name: 'Huile de carotte', price: 2000, category: 'Bronzage & Vitalité', emoji: '🥕', benefits: ['Facilite le bronzage', 'Hydrate la peau', 'Redonne de la vitalité', 'Éclat naturel des cheveux'] },
 ];
 
@@ -392,7 +392,7 @@ export default function Home() {
         <div className="header-inner">
           <a className="logo" href="#top" aria-label="AYD.Cosmetics, accueil">
             <img className="logo-img" src="/logo-light.png" alt="AYD.Cosmetics" />
-            <span className="logo-sub">Aydan Cosmetics Soins capillaires &amp; de la peau</span>
+            <span className="logo-sub">Aydan Cosmetics Soins capillaires &amp; soins de la peau</span>
           </a>
           <button className="cart-btn" onClick={() => setShowCart(true)} aria-label="Ouvrir le panier">
             <ShoppingCart size={26} />
@@ -672,7 +672,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="footer">
         <img src="/logo-light.png" alt="AYD.Cosmetics" style={{ height: '90px', width: 'auto', display: 'block', margin: '0 auto 0.8rem' }} />
-        <p>Soins capillaires &amp; de la peau • Livraison nationale</p>
+        <p>Soins capillaires &amp; soins de la peau • Livraison nationale</p>
         <p>© {new Date().getFullYear()} {BRAND}. Tous droits réservés.</p>
       </footer>
     </>
