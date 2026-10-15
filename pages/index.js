@@ -652,7 +652,7 @@ export default function Home() {
                   </>
                 )}
                 <p style={{ fontSize: '0.75rem', color: '#6b6080', marginTop: '0.6rem' }}>
-                  En cliquant sur « Envoyer ma commande », WhatsApp s'ouvre avec votre commande : envoyez-la pour la valider. Livraison via app {DELIVERY_APP}.
+                  En cliquant sur « Envoyer ma commande », WhatsApp s'ouvre avec votre commande : envoyez-la pour la valider.
                 </p>
               </div>
 
