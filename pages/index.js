@@ -437,7 +437,7 @@ export default function Home() {
         <div className="section-title">
           <h3>Nos Huiles</h3>
           <div className="divider" />
-          <p>Chaque huile répond à un besoin précis pour vos cheveux et votre peau.</p>
+          <p>Chaque huile répond à un besoin précis pour vos cheveux et votre peau, cliquez sur le Bouton WhatsApp si vous avez des préoccupations.</p>
         </div>
         <div className="toolbar">
           <div className="search">
