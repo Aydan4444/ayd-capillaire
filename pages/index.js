@@ -8,7 +8,7 @@ const WHATSAPP_NUMBER = '2250152105101';
 const DELIVERY_APP = 'Yango';
 // Lien Google Apps Script qui enregistre chaque commande dans ton Google Sheet.
 // Colle ici l'adresse qui finit par /exec (laisse '' pour désactiver).
-const SHEET_URL = '';
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbytw2zahrBNZmuk_yVl28RPsXDHR5EiQwhouRCLK88t7heaHLGljQrF_KwuoNzP-nI/exec';
 
 const BRAND = 'AYD.Cosmetics';
 
