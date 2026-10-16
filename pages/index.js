@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { ShoppingCart, X, Leaf, Truck, Smartphone, MessageCircle, Search } from 'lucide-react';
 
 // ⚠️ Numéro WhatsApp qui reçoit les commandes (indicatif 225 + numéro, sans + ni espaces)
-const WHATSAPP_NUMBER = '2250152105101';
+const WHATSAPP_NUMBER = '2250788348997';
 // Nom de l'application de livraison (corrige-le si besoin : Yango / Yang)
 const DELIVERY_APP = 'Yango';
 // Lien Google Apps Script qui enregistre chaque commande dans ton Google Sheet.
