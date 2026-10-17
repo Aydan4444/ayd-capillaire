@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { ShoppingCart, X, Leaf, Truck, Smartphone, MessageCircle, Search } from 'lucide-react';
-import WaitlistBanner from '../components/WaitlistBanner';
 
 // ⚠️ Numéro WhatsApp qui reçoit les commandes (indicatif 225 + numéro, sans + ni espaces)
 const WHATSAPP_NUMBER = '2250788348997';
@@ -12,6 +11,7 @@ const DELIVERY_APP = 'Yango';
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbytw2zahrBNZmuk_yVl28RPsXDHR5EiQwhouRCLK88t7heaHLGljQrF_KwuoNzP-nI/exec';
 
 const BRAND = 'AYD.Cosmetics';
+
 const products = [
   { id: 1, name: "Huile d'amande douce", price: 1500, category: 'Cheveux & Cuir chevelu', emoji: '🌰', benefits: ['Hydrate le cuir chevelu', 'Aide à stimuler la repousse', 'Contribue à atténuer les cernes', 'Soin de la peau'] },
   { id: 2, name: 'Huile de fenugrec', price: 1500, category: 'Cheveux & Corps', emoji: '🌿', benefits: ['Aide à limiter la chute', 'Favorise la croissance', 'Renforce et hydrate', 'Soin de la peau'] },
@@ -239,6 +239,136 @@ function ProductImage({ product }) {
   );
 }
 
+// ---------- Bandeau « Ouverture » : compte à rebours + liste d'attente ----------
+// Date d'ouverture : 1er décembre 2026 à 00h00 (Abidjan = heure GMT). Mois : 0 = janvier ... 11 = décembre
+const LAUNCH_DATE = Date.UTC(2026, 11, 1, 0, 0, 0);
+const LAUNCH_LABEL = '1er décembre';
+
+function getTimeLeft() {
+  const diff = LAUNCH_DATE - Date.now();
+  if (diff <= 0) return null;
+  return {
+    days: Math.floor(diff / 86400000),
+    hours: Math.floor(diff / 3600000) % 24,
+    minutes: Math.floor(diff / 60000) % 60,
+    seconds: Math.floor(diff / 1000) % 60,
+  };
+}
+
+const waitlistCss = `
+  .wl { max-width: 1000px; margin: 3rem auto 0; padding: 0 1rem; }
+  .wl-box { background: linear-gradient(135deg, #1a0f2e, #4c1d95); color: white; border-radius: 1.5rem; padding: 2.5rem 1.25rem; text-align: center; box-shadow: 0 18px 40px rgba(59,26,120,0.25); }
+  .wl-eyebrow { display: inline-block; font-size: 0.72rem; letter-spacing: 0.25em; text-transform: uppercase; color: #d4af37; border: 1px solid rgba(212,175,55,0.5); padding: 0.35rem 0.9rem; border-radius: 999px; margin-bottom: 1rem; }
+  .wl-box h3 { font-size: clamp(1.6rem, 5vw, 2.4rem); margin-bottom: 0.6rem; }
+  .wl-box > p { color: #e9d8fd; max-width: 520px; margin: 0 auto 1.5rem; line-height: 1.5; }
+  .wl-count { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; max-width: 420px; margin: 0 auto 1.8rem; }
+  .wl-unit { background: rgba(255,255,255,0.08); border: 1px solid rgba(212,175,55,0.35); border-radius: 0.9rem; padding: 0.8rem 0.2rem; }
+  .wl-unit strong { display: block; font-family: 'Playfair Display', Georgia, serif; font-size: clamp(1.4rem, 6vw, 2.1rem); color: #d4af37; line-height: 1; }
+  .wl-unit span { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #c9a8e0; }
+  .wl-form { display: flex; flex-wrap: wrap; gap: 0.7rem; justify-content: center; max-width: 560px; margin: 0 auto; }
+  .wl-form input[type="text"], .wl-form input[type="tel"] { flex: 1 1 200px; padding: 0.85rem 1.1rem; border-radius: 999px; border: none; font-size: 1rem; font-family: inherit; }
+  .wl-form input:focus { outline: 2px solid #d4af37; }
+  .wl-hp { position: absolute; left: -9999px; opacity: 0; height: 0; width: 0; }
+  .wl-done { background: rgba(255,255,255,0.1); border: 1px solid rgba(212,175,55,0.4); border-radius: 1rem; padding: 1rem 1.2rem; max-width: 520px; margin: 0 auto; }
+  .wl-note { font-size: 0.72rem; color: #b79ad6; margin: 1rem auto 0; max-width: 480px; }
+`;
+
+function WaitlistBanner({ sheetUrl = '', whatsappNumber = '' }) {
+  const [timeLeft, setTimeLeft] = useState(undefined);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [honeypot, setHoneypot] = useState('');
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    setTimeLeft(getTimeLeft());
+    const timer = setInterval(() => setTimeLeft(getTimeLeft()), 1000);
+    try {
+      if (localStorage.getItem('ayd-waitlist') === 'ok') setDone(true);
+    } catch (e) {}
+    return () => clearInterval(timer);
+  }, []);
+
+  // Avant le chargement, ou après la date d'ouverture : le bandeau disparaît tout seul
+  if (!timeLeft) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (honeypot) return; // robot : on ignore
+    const digits = phone.replace(/\D/g, '');
+    if (!name.trim()) {
+      alert('Veuillez indiquer votre prénom.');
+      return;
+    }
+    if (digits.length < 8 || digits.length > 15) {
+      alert('Votre numéro WhatsApp semble incorrect.');
+      return;
+    }
+
+    if (sheetUrl) {
+      try {
+        fetch(sheetUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          keepalive: true,
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ type: 'waitlist', name: name.trim(), phone: phone.trim(), source: 'site' }),
+        }).catch(() => {});
+      } catch (err) {}
+    } else if (whatsappNumber) {
+      const msg = `Bonjour AYD.Cosmetics, je m'appelle ${name.trim()}. Prévenez-moi dès l'ouverture de la boutique (le ${LAUNCH_LABEL}).`;
+      window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    try {
+      localStorage.setItem('ayd-waitlist', 'ok');
+    } catch (err) {}
+    setDone(true);
+  };
+
+  const units = [
+    ['Jours', timeLeft.days],
+    ['Heures', timeLeft.hours],
+    ['Min', timeLeft.minutes],
+    ['Sec', timeLeft.seconds],
+  ];
+
+  return (
+    <section className="wl" id="ouverture">
+      <style>{waitlistCss}</style>
+      <div className="wl-box">
+        <span className="wl-eyebrow">Bientôt disponible</span>
+        <h3 className="serif">Ouverture le {LAUNCH_LABEL}</h3>
+        <p>Laissez votre numéro WhatsApp et soyez prévenu(e) dès l'ouverture de la boutique AYD.Cosmetics.</p>
+
+        <div className="wl-count" aria-label="Compte à rebours avant l'ouverture">
+          {units.map(([label, value]) => (
+            <div className="wl-unit" key={label}>
+              <strong>{String(value).padStart(2, '0')}</strong>
+              <span>{label}</span>
+            </div>
+          ))}
+        </div>
+
+        {done ? (
+          <p className="wl-done">✅ Merci ! Nous vous écrirons sur WhatsApp dès l'ouverture de la boutique.</p>
+        ) : (
+          <form className="wl-form" onSubmit={handleSubmit}>
+            <input className="wl-hp" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} />
+            <input type="text" placeholder="Votre prénom" value={name} onChange={(e) => setName(e.target.value)} />
+            <input type="tel" placeholder="Votre numéro WhatsApp" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <button type="submit" className="btn btn-gold">🔔 Me prévenir</button>
+          </form>
+        )}
+
+        <p className="wl-note">
+          En laissant votre numéro, vous acceptez d'être contacté(e) sur WhatsApp au sujet de l'ouverture. Aucun spam.
+        </p>
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   const [cart, setCart] = useState([]);
   const [loaded, setLoaded] = useState(false);
@@ -431,7 +561,8 @@ export default function Home() {
           <div><strong>Livraison nationale</strong><span>Partout en Côte d'Ivoire</span></div>
         </div>
       </div>
-      
+
+      {/* Bandeau d'ouverture (compte à rebours + liste d'attente) */}
       <WaitlistBanner sheetUrl={SHEET_URL} whatsappNumber={WHATSAPP_NUMBER} />
 
       {/* Produits */}
@@ -439,7 +570,7 @@ export default function Home() {
         <div className="section-title">
           <h3>Nos Huiles</h3>
           <div className="divider" />
-          <p>Chaque huile répond à un besoin précis pour vos cheveux et votre peau, cliquez sur le Bouton WhatsApp si vous avez des préoccupations.</p>
+          <p>Chaque huile répond à un besoin précis pour vos cheveux et votre peau, cliquez sur le bouton WhatsApp si vous avez des préoccupations.</p>
         </div>
         <div className="toolbar">
           <div className="search">
@@ -522,7 +653,7 @@ export default function Home() {
       <section className="cta">
         <div className="cta-box">
           <h3 className="serif">Une question sur nos soins ?</h3>
-          <p>Écrivez-nous sur WhatsApp, nous vous conseillons le produit adaptée à votre besoin.</p>
+          <p>Écrivez-nous sur WhatsApp, nous vous conseillons le produit adapté à votre besoin.</p>
           <a className="btn btn-gold" href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer">
             <MessageCircle size={18} style={{ verticalAlign: '-3px', marginRight: '0.5rem' }} />
             Discuter sur WhatsApp
