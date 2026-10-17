@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { ShoppingCart, X, Leaf, Truck, Smartphone, MessageCircle, Search } from 'lucide-react';
+import WaitlistBanner from '../components/WaitlistBanner';
 
 // ⚠️ Numéro WhatsApp qui reçoit les commandes (indicatif 225 + numéro, sans + ni espaces)
 const WHATSAPP_NUMBER = '2250788348997';
@@ -11,7 +12,7 @@ const DELIVERY_APP = 'Yango';
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbytw2zahrBNZmuk_yVl28RPsXDHR5EiQwhouRCLK88t7heaHLGljQrF_KwuoNzP-nI/exec';
 
 const BRAND = 'AYD.Cosmetics';
-
+<WaitlistBanner sheetUrl={SHEET_URL} whatsappNumber={WHATSAPP_NUMBER} />
 const products = [
   { id: 1, name: "Huile d'amande douce", price: 1500, category: 'Cheveux & Cuir chevelu', emoji: '🌰', benefits: ['Hydrate le cuir chevelu', 'Aide à stimuler la repousse', 'Contribue à atténuer les cernes', 'Soin de la peau'] },
   { id: 2, name: 'Huile de fenugrec', price: 1500, category: 'Cheveux & Corps', emoji: '🌿', benefits: ['Aide à limiter la chute', 'Favorise la croissance', 'Renforce et hydrate', 'Soin de la peau'] },
