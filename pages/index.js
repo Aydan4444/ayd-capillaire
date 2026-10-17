@@ -841,7 +841,7 @@ export default function Home() {
       <footer className="footer">
         <img src="/logo-light.png" alt="AYD.Cosmetics" style={{ height: '90px', width: 'auto', display: 'block', margin: '0 auto 0.8rem' }} />
         <p>Soins capillaires &amp; soins de la peau par Aydan • COTE D'IVOIRE, Abidjan</p>
-        <p>aydancosmetics444@gmail.com • 0152105101</p>
+        <p>aydancosmetics444@gmail.com • 0788348997</p>
         <p>© {new Date().getFullYear()} {BRAND}. Tous droits réservés.</p>
       </footer>
     </>
