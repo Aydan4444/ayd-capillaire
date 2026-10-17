@@ -144,6 +144,7 @@ const css = `
   .btn-gold { background: var(--gold); color: var(--night); box-shadow: 0 8px 24px rgba(212,175,55,0.35); }
   .btn-gold:hover { box-shadow: 0 12px 28px rgba(212,175,55,0.5); }
   .btn-violet { background: var(--violet); color: white; }
+  .btn:disabled { background: #d9cfe9; color: #6b5a8a; cursor: not-allowed; box-shadow: none; transform: none; }
   .btn-violet:hover { background: var(--violet-dark); }
   .btn-outline { background: white; color: var(--violet); border: 2px solid var(--violet); }
 
@@ -238,6 +239,10 @@ function ProductImage({ product }) {
     />
   );
 }
+
+// Avant l'ouverture, les commandes sont bloquées pour les visiteurs.
+// Pour tester toi-même : ajoute ?test=ayd2026 à l'adresse du site (change ce code si tu veux).
+const PREVIEW_CODE = 'ayd2026';
 
 // ---------- Bandeau « Ouverture » : compte à rebours + liste d'attente ----------
 // Date d'ouverture : 1er décembre 2026 à 00h00 (Abidjan = heure GMT). Mois : 0 = janvier ... 11 = décembre
@@ -377,6 +382,19 @@ export default function Home() {
   const [customerInfo, setCustomerInfo] = useState(emptyInfo);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('Tous');
+  // Par défaut fermé : les commandes ne s'ouvrent qu'à la date d'ouverture (ou avec le code de test)
+  const [ordersOpen, setOrdersOpen] = useState(false);
+
+  useEffect(() => {
+    let testMode = false;
+    try {
+      testMode = new URLSearchParams(window.location.search).get('test') === PREVIEW_CODE;
+    } catch (e) {}
+    const check = () => setOrdersOpen(testMode || Date.now() >= LAUNCH_DATE);
+    check();
+    const timer = setInterval(check, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   const filtered = products.filter((p) => {
     const matchFilter = activeFilter === 'Tous' || productTags[p.id].includes(activeFilter);
@@ -435,6 +453,10 @@ export default function Home() {
 
   const handleCheckout = (e) => {
     e.preventDefault();
+    if (!ordersOpen) {
+      alert(`Les commandes ouvrent le ${LAUNCH_LABEL}. Merci de votre patience !`);
+      return;
+    }
     if (!customerInfo.name.trim() || !customerInfo.phone.trim() || !customerInfo.zone || !customerInfo.address.trim()) {
       alert("Veuillez remplir le nom, le téléphone, la commune et l'adresse.");
       return;
@@ -524,10 +546,12 @@ export default function Home() {
             <img className="logo-img" src="/logo-light.png" alt="AYD.Cosmetics" />
             <span className="logo-sub">Aydan Cosmetics Soins capillaires &amp; soins de la peau</span>
           </a>
-          <button className="cart-btn" onClick={() => setShowCart(true)} aria-label="Ouvrir le panier">
-            <ShoppingCart size={26} />
-            {cartCount > 0 && <span className="cart-badge" key={cartCount}>{cartCount}</span>}
-          </button>
+          {ordersOpen && (
+            <button className="cart-btn" onClick={() => setShowCart(true)} aria-label="Ouvrir le panier">
+              <ShoppingCart size={26} />
+              {cartCount > 0 && <span className="cart-badge" key={cartCount}>{cartCount}</span>}
+            </button>
+          )}
         </div>
       </header>
 
@@ -572,6 +596,11 @@ export default function Home() {
           <div className="divider" />
           <p>Chaque huile répond à un besoin précis pour vos cheveux et votre peau, cliquez sur le bouton WhatsApp si vous avez des préoccupations.</p>
         </div>
+        {!ordersOpen && (
+          <p style={{ textAlign: 'center', maxWidth: '560px', margin: '-1rem auto 2rem', background: '#f5effe', color: '#5b21b6', padding: '0.8rem 1rem', borderRadius: '0.8rem', fontSize: '0.92rem', fontWeight: 600 }}>
+            🔒 Les commandes ouvrent le {LAUNCH_LABEL}. Découvrez dès maintenant nos huiles !
+          </p>
+        )}
         <div className="toolbar">
           <div className="search">
             <Search size={18} />
@@ -606,9 +635,15 @@ export default function Home() {
                 </ul>
                 <div className="card-foot">
                   <span className="price">{product.price.toLocaleString('fr-FR')} F</span>
-                  <button className="btn btn-violet" style={{ padding: '0.6rem 1.2rem', fontSize: '0.9rem' }} onClick={() => addToCart(product)}>
-                    + Panier
-                  </button>
+                  {ordersOpen ? (
+                    <button className="btn btn-violet" style={{ padding: '0.6rem 1.2rem', fontSize: '0.9rem' }} onClick={() => addToCart(product)}>
+                      + Panier
+                    </button>
+                  ) : (
+                    <button className="btn" disabled style={{ padding: '0.6rem 1.2rem', fontSize: '0.9rem' }}>
+                      Bientôt
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
